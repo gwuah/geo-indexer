@@ -27,7 +27,7 @@ var driverClient = redis.NewClient(&redis.Options{
 var carClient = redis.NewClient(&redis.Options{
 	Addr:     "localhost:6379",
 	Password: "",
-	DB:       0,
+	DB:       2,
 })
 
 func print(data ...interface{}) {
@@ -51,26 +51,30 @@ func Server() {
 			c.JSON(500, gin.H{
 				"message": "Error",
 			})
+
+			return
 		}
 
 		lat, _ := strconv.ParseFloat(data.Lng, 64)
 		lng, _ := strconv.ParseFloat(data.Lat, 64)
 
 		h3Index := Utils.IndexLatLng(h3.GeoCoord{Latitude: lat, Longitude: lng})
+		stringifiedIndex := Utils.H3IndexToString(h3Index)
 
-		lastDriverLocation, err := driverClient.Get(data.DriverId).Result()
+		lastDriverLocationIndex, err := driverClient.Get(data.DriverId).Result()
 
-		if err != nil {
+		if err != redis.Nil && err != nil {
+
 			c.JSON(500, gin.H{
-				"message": "Error",
+				"message": "Last driver location lookup error",
 				"error":   err,
 			})
 			return
 		}
 
-		if Utils.H3IndexToString(h3Index) == lastDriverLocation {
+		if stringifiedIndex == lastDriverLocationIndex {
 			c.JSON(200, gin.H{
-				"message": "Success",
+				"message": "Driver hasn't changed position",
 			})
 			return
 		}
@@ -78,22 +82,40 @@ func Server() {
 		_, err = driverClient.Set(data.DriverId, uint64(h3Index), 0).Result()
 
 		if err != nil {
+
 			c.JSON(500, gin.H{
-				"message": "Error",
+				"message": "Updating driver location failed ",
 				"error":   err,
 			})
 			return
 		}
 
-		// find old index, remove driver
-		// find new index, add driver
+		_, err = carClient.LRem(lastDriverLocationIndex, 0, data.DriverId).Result()
+
+		if err != nil {
+			c.JSON(500, gin.H{
+				"message": "Updating old index failed",
+				"error":   err,
+			})
+			return
+		}
+
+		_, err = carClient.LPush(stringifiedIndex, data.DriverId).Result()
+
+		if err != nil {
+			c.JSON(500, gin.H{
+				"message": "Updating new index failed",
+				"error":   err,
+			})
+			return
+		}
 
 		c.JSON(200, gin.H{
 			"message": "Index was successful",
 			"data": gin.H{
 				"driver_id":           data.DriverId,
-				"last_driver_index":   lastDriverLocation,
-				"latest_driver_index": h3Index,
+				"last_driver_index":   lastDriverLocationIndex,
+				"latest_driver_index": stringifiedIndex,
 			},
 		})
 
@@ -103,5 +125,6 @@ func Server() {
 }
 
 func main() {
-	Server()
+	// Server()
+	print("" || nil)
 }
