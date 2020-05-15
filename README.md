@@ -4,6 +4,13 @@ Athena is our highly performant in-memory driver location indexing service.
 It's built specifically to receive geo-coordinates from drivers and index them for faster lookups during the dispatching phase of our lifecycle.
 It's usage may change in the near future
 
+# How to run 
+First Way
+- `go run server.go`
+
+Second Way
+- `go build server.go` and then you run `./server`
+
 # Usage
 
 To index driver location data,
