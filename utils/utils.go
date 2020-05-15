@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/go-redis/redis"
+	"github.com/uber/h3-go"
 )
 
 type DriverData struct {
@@ -12,25 +12,14 @@ type DriverData struct {
 	lat float64
 }
 
-func RunTests() {
-	fmt.Println("Testing GEO lib and redis")
+func IndexLatLng(coordinates h3.GeoCoord) h3.H3Index {
+	return h3.FromGeo(coordinates, 8)
 }
 
-func TestRedis() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
-
-	pong, err := client.Ping().Result()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(pong)
+func H3IndexToString(index h3.H3Index) string {
+	return fmt.Sprintf("%v", index)
 }
 
-func CheckIfDriverExists() {
-	driver_data := DriverData{lat: 5.683750933739772, lng: -0.24672031402587888}
-	fmt.Println(driver_data)
+func FormatH3Index(index h3.H3Index) string {
+	return fmt.Sprintf("%#x\n", index)
 }
