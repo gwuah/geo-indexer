@@ -38,7 +38,7 @@ When the driver has entered a new zone
 ```
 {
     "data": {
-        "driver_id": "1",
+        "id": "1",
         "last_index": "614792924527329279",
         "latest_index": 614792923793326079
     },
