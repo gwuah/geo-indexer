@@ -11,13 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type DriverLocationData struct {
-	DriverId string `json:"driver_id"`
+type UserLocationData struct {
+	DriverId string `json:"id"`
 	Lat      string `json:"lat"`
 	Lng      string `json:"lng"`
 }
 
-var driverClient = redis.NewClient(&redis.Options{
+var userClient = redis.NewClient(&redis.Options{
 	Addr:     "localhost:6379",
 	Password: "",
 	DB:       1,
@@ -40,7 +40,7 @@ func Server() {
 
 	r.GET("/", Controllers.ServeBasicView)
 
-	r.POST("/index-driver-location", Controllers.IndexLocation)
+	r.POST("/index-location", Controllers.IndexLocation)
 
 	r.Run()
 }
