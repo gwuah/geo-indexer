@@ -12,7 +12,7 @@ import (
 )
 
 type UserLocationData struct {
-	DriverId string `json:"id"`
+	Id string `json:"id"`
 	Lat      string `json:"lat"`
 	Lng      string `json:"lng"`
 }
