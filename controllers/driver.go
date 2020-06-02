@@ -9,13 +9,13 @@ import (
 	"github.com/uber/h3-go"
 )
 
-type DriverLocationData struct {
-	DriverId string `json:"driver_id"`
+type UserLocationData struct {
+	Id       string `json:"id"`
 	Lat      string `json:"lat"`
 	Lng      string `json:"lng"`
 }
 
-var driverClient = redis.NewClient(&redis.Options{
+var userClient = redis.NewClient(&redis.Options{
 	Addr:     "localhost:6379",
 	Password: "",
 	DB:       1,
@@ -28,7 +28,7 @@ var carClient = redis.NewClient(&redis.Options{
 })
 
 func IndexLocation(c *gin.Context) {
-	var data DriverLocationData
+	var data UserLocationData
 
 	if c.BindJSON(&data) != nil {
 
@@ -45,36 +45,36 @@ func IndexLocation(c *gin.Context) {
 	h3Index := Utils.IndexLatLng(h3.GeoCoord{Latitude: lat, Longitude: lng})
 	stringifiedIndex := Utils.H3IndexToString(h3Index)
 
-	lastDriverLocationIndex, err := driverClient.Get(data.DriverId).Result()
+	lastLocationIndex, err := userClient.Get(data.Id).Result()
 
 	if err != redis.Nil && err != nil {
 
 		c.JSON(500, gin.H{
-			"message": "Last driver location lookup error",
+			"message": "Last user location lookup error",
 			"error":   err,
 		})
 		return
 	}
 
-	if stringifiedIndex == lastDriverLocationIndex {
+	if stringifiedIndex == lastLocationIndex {
 		c.JSON(200, gin.H{
-			"message": "Driver hasn't changed position",
+			"message": "User hasn't changed position",
 		})
 		return
 	}
 
-	_, err = driverClient.Set(data.DriverId, uint64(h3Index), 0).Result()
+	_, err = userClient.Set(data.Id, uint64(h3Index), 0).Result()
 
 	if err != nil {
 
 		c.JSON(500, gin.H{
-			"message": "Updating driver location failed ",
+			"message": "Updating user location failed ",
 			"error":   err,
 		})
 		return
 	}
 
-	_, err = carClient.LRem(lastDriverLocationIndex, 0, data.DriverId).Result()
+	_, err = carClient.LRem(lastLocationIndex, 0, data.Id).Result()
 
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -84,7 +84,7 @@ func IndexLocation(c *gin.Context) {
 		return
 	}
 
-	_, err = carClient.LPush(stringifiedIndex, data.DriverId).Result()
+	_, err = carClient.LPush(stringifiedIndex, data.Id).Result()
 
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -97,9 +97,9 @@ func IndexLocation(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Index was successful",
 		"data": gin.H{
-			"driver_id":           data.DriverId,
-			"last_driver_index":   lastDriverLocationIndex,
-			"latest_driver_index": stringifiedIndex,
+			"id":           data.Id,
+			"last_index":   lastLocationIndex,
+			"latest_index": stringifiedIndex,
 			"lat":                 lat,
 			"lng":                 lng,
 		},
