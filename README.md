@@ -1,8 +1,16 @@
 # SLIC
-SLIC is a simple location indexing service built with golang and persisted with redis for speed.
+SLIC is a simple location indexing service built with golang and persisted with redis.
 It's ingests lng/lats and returns a geoIndex. 
 The geospatial indexing library being used here was built by uber [h3](https://github.com/uber/h3-go)
 Feel free to use it.
+
+# What it does
+It takes several coordinates and places them under an index, such that 1 index can point to numerous user ids.
+
+# What can you do with this (build upon this)
+- You can build a realtime supply service for your ride sharing application
+- You can build a realtime demand service for your ride sharing application
+- Build a price surging system based on the number of id's in a particular geographical area (geo-index)
 
 # How to run 
 First Way
