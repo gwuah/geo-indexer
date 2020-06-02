@@ -33,6 +33,3 @@ const basePickupLocation = {
   lat: "5.683729581559681",
   lon: "-0.2467846870422363",
 };
-
-let apiKey = "AIzaSyAT8jfo6wpzXcgHbis_GlC87rNDz5aIzQU";
-let mapUrl = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=3.exp&libraries=geometry,drawing,places`;
